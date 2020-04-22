@@ -1,0 +1,208 @@
+# vi
+esc then :w enter
+esc then :x enter
+# install ubuntu
+username adminuser  # this is is member of sudo group
+once sign in
+# change root password
+Type the following command to become root user and issue passwd:
+sudo -i
+passwd
+OR set a password for root user in a single go:
+sudo passwd root
+Test it your root password by typing the following command:
+su -
+
+
+
+
+apt update
+apt upgrade -y # -y yes to confirm
+
+
+# network must be configured
+dhclient # dhcp ip
+ip a
+hostname 
+hostnamectl
+sudo hostnamectl set-hostname ubserver.adatum.com 
+hostnamectl
+add ubserver on dns as host A
+
+# join ubuntu to the domain adatum
+# Netplan is the default network management tool on Ubuntu 18.04, replacing the /etc/resolv.conf and 
+# ensure that no DNS entries on cat /etc/resolv.conf old config deprecated
+# 
+vi /etc/netplan/50-cloud-init.yaml
+# nslookup see resolv.conf file
+dig -t SRV _ldap._tcp.adatum.com | grep -A2 "ANSWER SECTION"
+# realm is part of realmd package
+realm -v discover adatum.com
+realm list
+apt install realmd
+#apt -y install realmd see required package
+
+apt -y install realmd sssd sssd-tools 
+libnss-sss libpam-sss adcli 
+samba-common-bin oddjob oddjob-mkhomedir packagekit
+ping lon-dc1.adatum.com
+grep nameserver /etc/resolv.conf  # netplan from 18.04
+systemd-resolve --status
+systemd-resolve --flush-caches
+systemd-resolve --statistics
+
+
+
+
+  
+realm join --verbose --user=Administrator --computer-ou=ou=ubuntu,dc=adatum,dc=com adatum.com --install=/
+or just realm join adatum.com
+
+klist need krb5-user heimdal-clients packages
+
+# then
+sudo nano /etc/sssd/sssd.conf
+We want to do four things here:
+
+Add ssh to the services = section.
+Verify that ldap_id_mapping = True is set (this is the default)
+Change use_fully_qualified_names to False.
+Add ldap_user_ssh_public_key = altSecurityIdentities
+
+reboot  #systemctl restart sssd
+# CHECK ON THE ou=UBUNTU,dc=adatum,dc=com on ADUC
+# take me 2 reboot until it works
+then logon as 
+administrator
+Password
+klist
+
+
+#https://computingforgeeks.com/join-ubuntu-debian-to-active-directory-ad-domain/
+Limit to users
+
+To permit a user access via SSH and console, use the command:
+
+$ realm permit user1@example.com
+$ realm permit user2@example.com user3@example.com
+Permit access to group – Examples
+
+
+$ ream permit -g sysadmins
+$ realm permit -g 'Security Users'
+$ realm permit 'Domain Users' 'admin users'
+This will modify sssd.conf file.
+
+If instead you like to allow all users access, run:
+
+$ sudo realm permit --all
+
+
+sudo vi /etc/sudoers.d/domain_admins
+
+# add domain admins right to ubuntu server
+ # change this/etc/sudoers/
+sudo visudo
+%DOMAIN\admins ALL=(ALL) ALL 
+
+
+
+########## NFS files
+install role 2016 NFS : 172.16.0.10:
+ubuntu_data
+NFS sharing : with all check kerberos
+permission:
+
+default
+ALL MACHINES trying to access this share they WILL NOT be granted any access
+change it to NOaccess
+
+add ubuntu server
+ (172.16.0.14),  “Read/Write” and check the “Allow root access” checkbox.
+
+
+sudo apt-get install -y nfs-common
+sudo mkdir /data
+sudo mount -t nfs 172.16.0.10:/ubuntu_data /data
+echo "This is a test file" > /data/test.txt
+umount /data
+
+# aws cl1 2
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+# create access key for the IAM user 
+# devary  aws configure
+
+#####b install docker
+sudo apt-get update #-y
+#sudo apt-get remove docker docker-engine docker.io
+sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add –
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable" 
+apt-get update
+apt-get install -y docker-ce
+
+docker image ls # no image
+docker ps # no conatiner
+# create a container testweb from nginx image 
+sudo docker run --name testweb -d -p 8080:80 nginx
+
+docker image ls # yes image
+docker ps # yes conatiner
+sudo docker exec -it testweb /bin/bash  # entry point of the shell bash
+ls
+cd usr/share/nginx/html
+use vim
+apt update
+apt install vim -y
+vim usr/share/nginx/html/index.html # change
+i for insert
+:wq for write et save and quit
+
+apt update
+apt install curl -y
+curl localhost:80
+
+exit
+
+curl localhost:8080
+docker inspect testweb '{{ .NetworkSettings.IPAddress}}' testweb
+
+
+wait some minute from external
+on the browser you need to put http
+http://172.25.0.58:8080
+
+
+
+
+
+##### permission
+user devadam  : groups dev
+user itadam   : groups it
+user hradam   : groups hr
+user salesadam: groups sales
+
+as root if you create a folders
+mkdir -p /data/dev
+mkdir -p /data/hr
+mkdir -p /data/it
+mkdir -p /data/sales
+
+
+for VARIABLE in 1 2 3 4 5 .. N
+do
+	command1
+	command2
+	commandN
+done
+
+for i in {1..50}; do
+  mkdir s"$i"
+done
+
+#!/bin/bash
+for i in hr account it sales; do
+  mkdir "$i"
+done
