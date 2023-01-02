@@ -1,0 +1,17 @@
+https://1drv.ms/t/s!AsZEK3yXlCJHg9MscB8eMn2O_7k_8Q?e=RNKuSD
+### LAB student 
+
+# open  notepad  2x
+# try the script logic , identify the error 
+Do {  
+    $ProcessesFound = Get-Process -name notepad|  Select-Object -ExpandProperty Name
+    If ($ProcessesFound) {
+        Write-Host "Still running: $($ProcessesFound)"
+        start-sleep 5
+        Stop-Process -Name notepad
+    }
+} Until (!$ProcessesFound)
+
+
+## LAB 1.2
+# For testing a sales app , we need to Create 10 users in active directory user1 to 10
